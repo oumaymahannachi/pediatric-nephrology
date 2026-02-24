@@ -1,0 +1,441 @@
+@if (currentUser$ | async; as user) {
+<nav class="pcoded-navbar menupos-fixed menu-light" [class.navbar-collapsed]="navCollapsed">
+  <div class="navbar-content">
+    <div class="header-logo">
+      <a routerLink="/doctor" class="b-brand">
+        <img src="assets/brand/pedialink-logo.png" alt="PediaLink" class="logo" />
+      </a>
+      <a href="javascript:" class="mobile-menu" (click)="toggleNav()">
+        <span></span>
+      </a>
+    </div>
+    <div class="navbar-wrapper">
+      <ul class="nav pcoded-inner-navbar">
+        <li class="nav-item pcoded-menu-caption"><label>Navigation</label></li>
+        <li class="nav-item" [class.active]="activeTab === 'dashboard'">
+          <a class="nav-link" (click)="setTab('dashboard')">
+            <span class="pcoded-micon"><lucide-icon name="layout-dashboard" [size]="18"></lucide-icon></span>
+            <span class="pcoded-mtext">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item" [class.active]="activeTab === 'patients'">
+          <a class="nav-link" (click)="setTab('patients')">
+            <span class="pcoded-micon"><lucide-icon name="baby" [size]="18"></lucide-icon></span>
+            <span class="pcoded-mtext">My Patients</span>
+          </a>
+        </li>
+        <li class="nav-item" [class.active]="activeTab === 'appointments'">
+          <a class="nav-link" (click)="setTab('appointments')">
+            <span class="pcoded-micon"><lucide-icon name="calendar" [size]="18"></lucide-icon></span>
+            <span class="pcoded-mtext">Appointments</span>
+          </a>
+        </li>
+        <li class="nav-item" [class.active]="activeTab === 'pending'">
+          <a class="nav-link" (click)="setTab('pending')">
+            <span class="pcoded-micon"><lucide-icon name="clock" [size]="18"></lucide-icon></span>
+            <span class="pcoded-mtext">Pending</span>
+            @if (pendingAppointments.length > 0) {
+              <span class="pcoded-badge label label-danger">{{ pendingAppointments.length }}</span>
+            }
+          </a>
+        </li>
+        <li class="nav-item pcoded-menu-caption"><label>Account</label></li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/doctor/profile">
+            <span class="pcoded-micon"><lucide-icon name="user" [size]="18"></lucide-icon></span>
+            <span class="pcoded-mtext">Edit Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" (click)="logout()">
+            <span class="pcoded-micon"><lucide-icon name="log-out" [size]="18"></lucide-icon></span>
+            <span class="pcoded-mtext">Logout</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<header class="navbar pcoded-header navbar-expand-lg header-blue">
+  <div class="m-header">
+    <a href="javascript:" class="mobile-menu" (click)="toggleNav()"><span></span></a>
+    <a routerLink="/doctor" class="b-brand">
+      <img src="assets/brand/pedialink-logo.png" alt="PediaLink" class="logo" />
+    </a>
+  </div>
+  <div class="collapse navbar-collapse">
+    <ul class="navbar-nav me-auto">
+      <li class="nav-item">
+        <lucide-icon name="search" [size]="20" class="header-search-icon"></lucide-icon>
+      </li>
+    </ul>
+    <ul class="navbar-nav ms-auto">
+      <li>
+        <div class="dropdown">
+          <a href="javascript:" class="dropdown-toggle">
+            <lucide-icon name="bell" [size]="20"></lucide-icon>
+            @if (pendingAppointments.length > 0) {
+              <span class="badge bg-danger badge-pill">{{ pendingAppointments.length }}</span>
+            }
+          </a>
+        </div>
+      </li>
+      <li>
+        <div class="dropdown">
+          <a href="javascript:" class="dropdown-toggle">
+            <lucide-icon name="mail" [size]="20"></lucide-icon>
+          </a>
+        </div>
+      </li>
+      <li>
+        <div class="dropdown drp-user">
+          <a href="javascript:" class="dropdown-toggle">
+            <div class="avatar-circle avatar-header">{{ (user.fullName || '?').charAt(0) }}</div>
+          </a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<div class="pcoded-main-container">
+  <div class="pcoded-wrapper">
+    <div class="pcoded-content">
+      <div class="pcoded-inner-content">
+        <div class="main-body">
+          <div class="page-wrapper">
+
+            @if (alertMsg) {
+              <div class="alert" [class.alert-success]="alertType === 'success'" [class.alert-danger]="alertType === 'error'">
+                <lucide-icon [name]="alertType === 'success' ? 'check-circle' : 'alert-circle'" [size]="16"></lucide-icon>
+                {{ alertMsg }}
+                <button class="alert-close" (click)="alertMsg = ''"><lucide-icon name="x" [size]="14"></lucide-icon></button>
+              </div>
+            }
+
+            @if (activeTab === 'dashboard') {
+              <div class="row">
+                @for (card of cards; track card.title) {
+                  <div class="col-md-6 col-xl-3">
+                    <div class="card {{ card.background }} order-card">
+                      <div class="card-body">
+                        <h6 class="text-white">{{ card.title }}</h6>
+                        <h2 class="text-end text-white">
+                          <lucide-icon [name]="card.icon" [size]="28" class="float-start"></lucide-icon>
+                          <span>{{ card.number }}</span>
+                        </h2>
+                        <p class="m-b-0">{{ card.text }}</p>
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <div class="col-xl-6 col-md-12">
+                  <div class="card">
+                    <div class="card-header"><h5>Appointment Trends</h5></div>
+                    <div class="card-body">
+                      <apx-chart
+                        [chart]="chartOptions.chart!"
+                        [dataLabels]="chartOptions.dataLabels!"
+                        [stroke]="chartOptions.stroke!"
+                        [series]="chartOptions.series!"
+                        [xaxis]="chartOptions.xaxis!"
+                        [colors]="chartOptions.colors!"
+                        [fill]="chartOptions.fill!"
+                        [yaxis]="chartOptions.yaxis!"
+                      ></apx-chart>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-6 col-md-12">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="card">
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-auto"><span>Patients</span></div>
+                            <div class="col text-end">
+                              <h2 class="mb-0">{{ stats.patients }}</h2>
+                              <span class="text-c-green">8.2% <lucide-icon name="trending-up" [size]="14" class="ms-1"></lucide-icon></span>
+                            </div>
+                          </div>
+                          <apx-chart
+                            [series]="chartOptions_1.series!"
+                            [chart]="chartOptions_1.chart!"
+                            [stroke]="chartOptions_1.stroke!"
+                            [dataLabels]="chartOptions_1.dataLabels!"
+                            [labels]="chartOptions_1.labels!"
+                            [legend]="chartOptions_1.legend!"
+                            [colors]="chartOptions_1.colors!"
+                            [fill]="chartOptions_1.fill!"
+                            [grid]="chartOptions_1.grid!"
+                            [plotOptions]="chartOptions_1.plotOptions!"
+                            [tooltip]="chartOptions_1.tooltip!"
+                          ></apx-chart>
+                          <div class="row mt-3 text-center">
+                            <div class="col">
+                              <h3 class="m-0"><span class="dot-indicator bg-success"></span> {{ stats.patients }}</h3>
+                              <span class="ms-3">New</span>
+                            </div>
+                            <div class="col">
+                              <h3 class="m-0"><span class="dot-indicator bg-primary"></span> {{ stats.appointments }}</h3>
+                              <span class="ms-3">Return</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card bg-primary text-white">
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-auto"><span>Patients</span></div>
+                            <div class="col text-end">
+                              <h2 class="mb-0 text-white">{{ stats.patients }}</h2>
+                              <span class="text-white">8.2% <lucide-icon name="trending-up" [size]="14" class="ms-1"></lucide-icon></span>
+                            </div>
+                          </div>
+                          <apx-chart
+                            [series]="chartOptions_2.series!"
+                            [chart]="chartOptions_2.chart!"
+                            [stroke]="chartOptions_2.stroke!"
+                            [dataLabels]="chartOptions_2.dataLabels!"
+                            [labels]="chartOptions_2.labels!"
+                            [legend]="chartOptions_2.legend!"
+                            [colors]="chartOptions_2.colors!"
+                            [fill]="chartOptions_2.fill!"
+                            [grid]="chartOptions_2.grid!"
+                            [plotOptions]="chartOptions_2.plotOptions!"
+                            [tooltip]="chartOptions_2.tooltip!"
+                          ></apx-chart>
+                          <div class="row mt-3 text-center">
+                            <div class="col">
+                              <h3 class="m-0 text-white"><span class="dot-indicator bg-white"></span> {{ stats.patients }}</h3>
+                              <span class="ms-3">New</span>
+                            </div>
+                            <div class="col">
+                              <h3 class="m-0 text-white"><span class="dot-indicator bg-white"></span> {{ stats.appointments }}</h3>
+                              <span class="ms-3">Return</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-12 col-lg-4">
+                  <div class="card seo-card">
+                    <div class="card-body seo-statustic">
+                      <lucide-icon name="activity" [size]="20" class="text-c-red"></lucide-icon>
+                      <h5 class="mb-1">65%</h5>
+                      <p>Occupancy</p>
+                    </div>
+                    <div class="card-footer seo-chart border border-top-0 p-0 overflow-hidden">
+                      <apx-chart
+                        [series]="chartOptions_3.series!"
+                        [chart]="chartOptions_3.chart!"
+                        [stroke]="chartOptions_3.stroke!"
+                        [dataLabels]="chartOptions_3.dataLabels!"
+                        [colors]="chartOptions_3.colors!"
+                        [fill]="chartOptions_3.fill!"
+                        [tooltip]="chartOptions_3.tooltip!"
+                        [yaxis]="chartOptions_3.yaxis!"
+                      ></apx-chart>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <div class="card">
+                    <div class="card-body text-center">
+                      <lucide-icon name="mail" [size]="40" class="text-c-blue d-block icon-lg"></lucide-icon>
+                      <h4 class="m-t-20"><span class="text-c-blue">{{ patients.length }}</span> Patients</h4>
+                      <p class="m-b-20">Your patient list is growing</p>
+                      <button class="btn btn-primary btn-sm btn-round" (click)="setTab('patients')">View All</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <div class="card">
+                    <div class="card-body text-center">
+                      <lucide-icon name="calendar" [size]="40" class="text-c-green d-block icon-lg"></lucide-icon>
+                      <h4 class="m-t-20"><span class="text-c-green">{{ appointments.length }}</span> Appointments</h4>
+                      <p class="m-b-20">Your schedule overview</p>
+                      <button class="btn btn-success btn-sm btn-round" (click)="setTab('appointments')">Manage</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (activeTab === 'patients') {
+              @if (patients.length === 0) {
+                <div class="card">
+                  <div class="card-body text-center py-5">
+                    <lucide-icon name="baby" [size]="48" class="text-muted"></lucide-icon>
+                    <h5 class="mt-3">No patients yet</h5>
+                    <p class="text-muted">When parents assign you as their child's doctor, patients will appear here.</p>
+                  </div>
+                </div>
+              }
+              <div class="row">
+                @for (p of patients; track p.childId) {
+                  <div class="col-xl-4 col-md-6">
+                    <div class="card patient-card">
+                      <div class="card-body text-center">
+                        <div class="avatar-circle avatar-lg mx-auto mb-3">{{ (p.childName || '?').charAt(0) }}</div>
+                        <h5>{{ p.childName }}</h5>
+                        <p class="text-muted mb-2">{{ p.gender }} &middot; Born {{ p.dateOfBirth }}</p>
+                        <span class="badge bg-light-primary">{{ p.parentName }}</span>
+                        @if (p.notes) {
+                          <p class="text-muted mt-2 small">{{ p.notes }}</p>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (activeTab === 'appointments') {
+              @if (appointments.length === 0) {
+                <div class="card">
+                  <div class="card-body text-center py-5">
+                    <lucide-icon name="calendar" [size]="48" class="text-muted"></lucide-icon>
+                    <h5 class="mt-3">No appointments</h5>
+                    <p class="text-muted">Your appointments will appear here.</p>
+                  </div>
+                </div>
+              }
+              <div class="card">
+                <div class="card-header"><h5>All Appointments</h5></div>
+                <div class="card-body table-border-style">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Reason</th>
+                          <th>Date & Time</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (apt of appointments; track apt.id) {
+                          <tr>
+                            <td>{{ apt.reason || 'Appointment' }}</td>
+                            <td>{{ apt.dateTime | date:'MMM d, y, h:mm a' }}</td>
+                            <td>
+                              <span class="badge bg-{{ getStatusClass(apt.status || '') }}">{{ apt.status }}</span>
+                            </td>
+                            <td>
+                              @if (apt.status === 'ACCEPTED') {
+                                <button class="btn btn-sm btn-success" (click)="completeAppointment(apt.id!)">
+                                  <lucide-icon name="check-circle" [size]="14"></lucide-icon> Complete
+                                </button>
+                              }
+                              @if (apt.status === 'PENDING') {
+                                <button class="btn btn-sm btn-primary me-1" (click)="acceptAppointment(apt.id!)">
+                                  <lucide-icon name="check" [size]="14"></lucide-icon>
+                                </button>
+                                <button class="btn btn-sm btn-warning me-1" (click)="openReschedule(apt)">
+                                  <lucide-icon name="clock" [size]="14"></lucide-icon>
+                                </button>
+                                <button class="btn btn-sm btn-danger" (click)="refuseAppointment(apt.id!)">
+                                  <lucide-icon name="x" [size]="14"></lucide-icon>
+                                </button>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (activeTab === 'pending') {
+              @if (pendingAppointments.length === 0) {
+                <div class="card">
+                  <div class="card-body text-center py-5">
+                    <lucide-icon name="check-circle" [size]="48" class="text-muted"></lucide-icon>
+                    <h5 class="mt-3">All clear</h5>
+                    <p class="text-muted">No pending appointment requests.</p>
+                  </div>
+                </div>
+              }
+              <div class="card">
+                <div class="card-header"><h5>Pending Requests</h5></div>
+                <div class="card-body table-border-style">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Reason</th>
+                          <th>Date & Time</th>
+                          <th>Notes</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (apt of pendingAppointments; track apt.id) {
+                          <tr>
+                            <td>{{ apt.reason || 'Appointment Request' }}</td>
+                            <td>{{ apt.dateTime | date:'MMM d, y, h:mm a' }}</td>
+                            <td>{{ apt.parentNotes || '-' }}</td>
+                            <td>
+                              <button class="btn btn-sm btn-primary me-1" (click)="acceptAppointment(apt.id!)">
+                                <lucide-icon name="check" [size]="14"></lucide-icon> Accept
+                              </button>
+                              <button class="btn btn-sm btn-warning me-1" (click)="openReschedule(apt)">
+                                <lucide-icon name="clock" [size]="14"></lucide-icon> Reschedule
+                              </button>
+                              <button class="btn btn-sm btn-danger" (click)="refuseAppointment(apt.id!)">
+                                <lucide-icon name="x" [size]="14"></lucide-icon> Refuse
+                              </button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            }
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+@if (showRescheduleModal) {
+  <div class="modal-backdrop" (click)="showRescheduleModal = false">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Reschedule Appointment</h5>
+          <button class="btn-close" (click)="showRescheduleModal = false"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Proposed Date & Time <span class="text-danger">*</span></label>
+            <input type="datetime-local" class="form-control" [(ngModel)]="rescheduleDate" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" [(ngModel)]="rescheduleNotes" rows="3" placeholder="Reason for rescheduling..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="showRescheduleModal = false">Cancel</button>
+          <button class="btn btn-primary" (click)="submitReschedule()" [disabled]="!rescheduleDate">Reschedule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

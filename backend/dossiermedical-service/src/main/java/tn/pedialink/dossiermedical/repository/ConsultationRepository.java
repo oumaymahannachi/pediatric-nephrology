@@ -1,0 +1,10 @@
+package tn.pedialink.dossiermedical.repository;
+
+import org.springframework.data.mongodb.repository.MongoRepository;
+import tn.pedialink.dossiermedical.model.consultation.Consultation;
+import java.util.List;
+
+public interface ConsultationRepository extends MongoRepository<Consultation, String> {
+    List<Consultation> findByPatientId(String patientId);
+    List<Consultation> findByMedecinId(String medecinId);
+}

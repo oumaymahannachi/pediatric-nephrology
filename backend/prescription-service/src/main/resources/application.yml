@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: prescription-service
+
+  cloud:
+    config:
+      enabled: false
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb+srv://PediaLink:PediaLink@pedialink.0d8a5qd.mongodb.net/pedialink_prescriptions?retryWrites=true&w=majority}
+      auto-index-creation: true
+
+server:
+  port: ${SERVER_PORT:8082}
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:votre-cle-secrete-tres-longue-pour-jwt-signing-min-256-bits}
+    expiration-ms: ${JWT_EXPIRATION:86400000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    tn.pedialink.prescription: DEBUG

@@ -1,0 +1,39 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: treatment-monitoring-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/pedialink
+      auto-index-creation: true
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+
+eureka:
+  client:
+    enabled: false
+
+app:
+  jwt:
+    secret: PediaLinkSuperSecretKeyForJwtToken2024MustBeAtLeast256BitsLong!!
+  cors:
+    allowed-origins: http://localhost:4200
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    tn.pedialink.treatment: DEBUG
+    org.mongodb.driver: DEBUG

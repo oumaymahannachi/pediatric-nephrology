@@ -1,0 +1,407 @@
+@if (currentUser$ | async; as user) {
+<nav class="pcoded-navbar menupos-fixed menu-light" [class.navbar-collapsed]="navCollapsed">
+  <div class="navbar-content">
+    <div class="header-logo">
+      <a routerLink="/admin" class="b-brand">
+        <img src="assets/brand/pedialink-logo.png" alt="PediaLink" class="logo" />
+      </a>
+      <a href="javascript:" class="mobile-menu" (click)="toggleNav()">
+        <span></span>
+      </a>
+    </div>
+    <div class="navbar-wrapper">
+      <ul class="nav pcoded-inner-navbar">
+        <li class="nav-item pcoded-menu-caption"><label>Navigation</label></li>
+        <li class="nav-item" [class.active]="activeTab === 'dashboard'">
+          <a class="nav-link" (click)="setTab('dashboard')">
+            <span class="pcoded-micon"><lucide-icon name="layout-dashboard" [size]="18"></lucide-icon></span>
+            <span class="pcoded-mtext">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item" [class.active]="activeTab === 'users'">
+          <a class="nav-link" (click)="setTab('users')">
+            <span class="pcoded-micon"><lucide-icon name="users" [size]="18"></lucide-icon></span>
+            <span class="pcoded-mtext">Users</span>
+          </a>
+        </li>
+        <li class="nav-item pcoded-menu-caption"><label>Account</label></li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/admin/profile">
+            <span class="pcoded-micon"><lucide-icon name="user" [size]="18"></lucide-icon></span>
+            <span class="pcoded-mtext">Edit Profile</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" (click)="logout()">
+            <span class="pcoded-micon"><lucide-icon name="log-out" [size]="18"></lucide-icon></span>
+            <span class="pcoded-mtext">Logout</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<header class="navbar pcoded-header navbar-expand-lg header-blue">
+  <div class="m-header">
+    <a href="javascript:" class="mobile-menu" (click)="toggleNav()"><span></span></a>
+    <a routerLink="/admin" class="b-brand">
+      <img src="assets/brand/pedialink-logo.png" alt="PediaLink" class="logo" />
+    </a>
+  </div>
+  <div class="collapse navbar-collapse">
+    <ul class="navbar-nav me-auto">
+      <li class="nav-item">
+        <lucide-icon name="search" [size]="20" class="header-search-icon"></lucide-icon>
+      </li>
+    </ul>
+    <ul class="navbar-nav ms-auto">
+      <li>
+        <div class="dropdown">
+          <a href="javascript:" class="dropdown-toggle">
+            <lucide-icon name="bell" [size]="20"></lucide-icon>
+          </a>
+        </div>
+      </li>
+      <li>
+        <div class="dropdown">
+          <a href="javascript:" class="dropdown-toggle">
+            <lucide-icon name="mail" [size]="20"></lucide-icon>
+          </a>
+        </div>
+      </li>
+      <li>
+        <div class="dropdown drp-user">
+          <a href="javascript:" class="dropdown-toggle">
+            <div class="avatar-circle avatar-header">{{ (user.fullName || '?').charAt(0) }}</div>
+          </a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<div class="pcoded-main-container">
+  <div class="pcoded-wrapper">
+    <div class="pcoded-content">
+      <div class="pcoded-inner-content">
+        <div class="main-body">
+          <div class="page-wrapper">
+
+            @if (alertMsg) {
+              <div class="alert" [class.alert-success]="alertType === 'success'" [class.alert-danger]="alertType === 'error'">
+                <lucide-icon [name]="alertType === 'success' ? 'check-circle' : 'alert-circle'" [size]="16"></lucide-icon>
+                {{ alertMsg }}
+                <button class="alert-close" (click)="alertMsg = ''"><lucide-icon name="x" [size]="14"></lucide-icon></button>
+              </div>
+            }
+
+            @if (activeTab === 'dashboard') {
+              <div class="row">
+                @for (card of cards; track card.title) {
+                  <div class="col-md-6 col-xl-3">
+                    <div class="card {{ card.background }} order-card">
+                      <div class="card-body">
+                        <h6 class="text-white">{{ card.title }}</h6>
+                        <h2 class="text-end text-white">
+                          <lucide-icon [name]="card.icon" [size]="28" class="float-start"></lucide-icon>
+                          <span>{{ card.number }}</span>
+                        </h2>
+                        <p class="m-b-0">{{ card.text }}</p>
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <div class="col-xl-6 col-md-12">
+                  <div class="card">
+                    <div class="card-header"><h5>User Growth</h5></div>
+                    <div class="card-body">
+                      <apx-chart
+                        [chart]="chartOptions.chart!"
+                        [dataLabels]="chartOptions.dataLabels!"
+                        [stroke]="chartOptions.stroke!"
+                        [series]="chartOptions.series!"
+                        [xaxis]="chartOptions.xaxis!"
+                        [colors]="chartOptions.colors!"
+                        [fill]="chartOptions.fill!"
+                        [yaxis]="chartOptions.yaxis!"
+                      ></apx-chart>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-6 col-md-12">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="card">
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-auto"><span>Roles</span></div>
+                            <div class="col text-end">
+                              <h2 class="mb-0">{{ stats.totalUsers }}</h2>
+                              <span class="text-c-green">8.2% <lucide-icon name="trending-up" [size]="14" class="ms-1"></lucide-icon></span>
+                            </div>
+                          </div>
+                          <apx-chart
+                            [series]="chartOptions_1.series!"
+                            [chart]="chartOptions_1.chart!"
+                            [stroke]="chartOptions_1.stroke!"
+                            [dataLabels]="chartOptions_1.dataLabels!"
+                            [labels]="chartOptions_1.labels!"
+                            [legend]="chartOptions_1.legend!"
+                            [colors]="chartOptions_1.colors!"
+                            [fill]="chartOptions_1.fill!"
+                            [grid]="chartOptions_1.grid!"
+                            [plotOptions]="chartOptions_1.plotOptions!"
+                            [tooltip]="chartOptions_1.tooltip!"
+                          ></apx-chart>
+                          <div class="row mt-3 text-center">
+                            <div class="col">
+                              <h3 class="m-0"><span class="dot-indicator bg-success"></span> {{ stats.doctors }}</h3>
+                              <span class="ms-3">Doctors</span>
+                            </div>
+                            <div class="col">
+                              <h3 class="m-0"><span class="dot-indicator bg-primary"></span> {{ stats.parents }}</h3>
+                              <span class="ms-3">Parents</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card bg-primary text-white">
+                        <div class="card-body">
+                          <div class="row">
+                            <div class="col-auto"><span>Status</span></div>
+                            <div class="col text-end">
+                              <h2 class="mb-0 text-white">{{ stats.totalUsers }}</h2>
+                              <span class="text-white">8.2% <lucide-icon name="trending-up" [size]="14" class="ms-1"></lucide-icon></span>
+                            </div>
+                          </div>
+                          <apx-chart
+                            [series]="chartOptions_2.series!"
+                            [chart]="chartOptions_2.chart!"
+                            [stroke]="chartOptions_2.stroke!"
+                            [dataLabels]="chartOptions_2.dataLabels!"
+                            [labels]="chartOptions_2.labels!"
+                            [legend]="chartOptions_2.legend!"
+                            [colors]="chartOptions_2.colors!"
+                            [fill]="chartOptions_2.fill!"
+                            [grid]="chartOptions_2.grid!"
+                            [plotOptions]="chartOptions_2.plotOptions!"
+                            [tooltip]="chartOptions_2.tooltip!"
+                          ></apx-chart>
+                          <div class="row mt-3 text-center">
+                            <div class="col">
+                              <h3 class="m-0 text-white"><span class="dot-indicator bg-white"></span> {{ stats.doctors }}</h3>
+                              <span class="ms-3">Active</span>
+                            </div>
+                            <div class="col">
+                              <h3 class="m-0 text-white"><span class="dot-indicator bg-white"></span> {{ stats.infirmiers }}</h3>
+                              <span class="ms-3">Banned</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-12 col-lg-4">
+                  <div class="card seo-card">
+                    <div class="card-body seo-statustic">
+                      <lucide-icon name="activity" [size]="20" class="text-c-red"></lucide-icon>
+                      <h5 class="mb-1">{{ stats.children }}</h5>
+                      <p>Children</p>
+                    </div>
+                    <div class="card-footer seo-chart border border-top-0 p-0 overflow-hidden">
+                      <apx-chart
+                        [series]="chartOptions_3.series!"
+                        [chart]="chartOptions_3.chart!"
+                        [stroke]="chartOptions_3.stroke!"
+                        [dataLabels]="chartOptions_3.dataLabels!"
+                        [colors]="chartOptions_3.colors!"
+                        [fill]="chartOptions_3.fill!"
+                        [tooltip]="chartOptions_3.tooltip!"
+                        [yaxis]="chartOptions_3.yaxis!"
+                      ></apx-chart>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <div class="card">
+                    <div class="card-body text-center">
+                      <lucide-icon name="users" [size]="40" class="text-c-blue d-block icon-lg"></lucide-icon>
+                      <h4 class="m-t-20"><span class="text-c-blue">{{ stats.totalUsers }}</span> Users</h4>
+                      <p class="m-b-20">Registered platform users</p>
+                      <button class="btn btn-primary btn-sm btn-round" (click)="setTab('users')">Manage</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                  <div class="card">
+                    <div class="card-body text-center">
+                      <lucide-icon name="calendar" [size]="40" class="text-c-green d-block icon-lg"></lucide-icon>
+                      <h4 class="m-t-20"><span class="text-c-green">{{ stats.appointments }}</span> Appointments</h4>
+                      <p class="m-b-20">Total platform bookings</p>
+                      <button class="btn btn-success btn-sm btn-round" (click)="setTab('users')">View</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (activeTab === 'users') {
+              <div class="toolbar">
+                <div class="toolbar-search">
+                  <lucide-icon name="search" [size]="18" class="search-icon"></lucide-icon>
+                  <input type="text" class="form-control" placeholder="Search by name, email or CIN..." [(ngModel)]="searchQuery" (ngModelChange)="applyFilters()" />
+                </div>
+                <select class="form-control toolbar-select" [(ngModel)]="roleFilter" (ngModelChange)="applyFilters()">
+                  <option value="">All Roles</option>
+                  <option value="DOCTOR">Doctor</option>
+                  <option value="PARENT">Parent</option>
+                  <option value="INFIRMIER">Nurse</option>
+                </select>
+                <span class="toolbar-count">{{ filteredUsers.length }} user(s)</span>
+              </div>
+
+              @if (filteredUsers.length === 0) {
+                <div class="card">
+                  <div class="card-body text-center py-5">
+                    <lucide-icon name="users" [size]="48" class="text-muted"></lucide-icon>
+                    <h5 class="mt-3">No users found</h5>
+                    <p class="text-muted">Try adjusting your search or filter criteria.</p>
+                  </div>
+                </div>
+              }
+
+              <div class="card">
+                <div class="card-header"><h5>All Users</h5></div>
+                <div class="card-body table-border-style">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>User</th>
+                          <th>Email</th>
+                          <th>CIN</th>
+                          <th>Role</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (u of paginatedUsers; track u.id) {
+                          <tr>
+                            <td>
+                              <div class="table-user-cell">
+                                <div class="avatar-circle avatar-sm">{{ (u.fullName || '?').charAt(0) }}</div>
+                                <strong>{{ u.fullName }}</strong>
+                              </div>
+                            </td>
+                            <td>{{ u.email }}</td>
+                            <td>{{ u.cin || '-' }}</td>
+                            <td><span class="badge role-badge" [attr.data-role]="getRoleBadgeClass(u.role)">{{ u.role }}</span></td>
+                            <td><span class="badge status-badge" [attr.data-status]="getStatusClass(u.status)">{{ u.status }}</span></td>
+                            <td>
+                              <div class="action-btns">
+                                <button class="btn btn-sm btn-primary" title="Edit" (click)="openEditUser(u)">
+                                  <lucide-icon name="edit" [size]="14"></lucide-icon>
+                                </button>
+                                @if (u.status === 'ACTIVE') {
+                                  <button class="btn btn-sm btn-warning" title="Ban" (click)="banUser(u.id!)">
+                                    <lucide-icon name="ban" [size]="14"></lucide-icon>
+                                  </button>
+                                } @else {
+                                  <button class="btn btn-sm btn-success" title="Unban" (click)="unbanUser(u.id!)">
+                                    <lucide-icon name="user-check" [size]="14"></lucide-icon>
+                                  </button>
+                                }
+                                <button class="btn btn-sm btn-danger" title="Delete" (click)="deleteUser(u.id!)">
+                                  <lucide-icon name="trash-2" [size]="14"></lucide-icon>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              @if (totalPages > 1) {
+                <div class="paginator">
+                  <button class="paginator-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+                    <lucide-icon name="chevron-left" [size]="16"></lucide-icon>
+                  </button>
+                  @for (p of pageNumbers; track p) {
+                    <button class="paginator-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
+                  }
+                  <button class="paginator-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+                    <lucide-icon name="chevron-right" [size]="16"></lucide-icon>
+                  </button>
+                  <span class="paginator-info">Page {{ currentPage }} of {{ totalPages }}</span>
+                </div>
+              }
+            }
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+@if (showEditModal) {
+  <div class="modal-backdrop" (click)="showEditModal = false">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit User</h5>
+          <button class="btn-close" (click)="showEditModal = false"><lucide-icon name="x" [size]="18"></lucide-icon></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="editForm" (ngSubmit)="saveEditUser()">
+            <div class="mb-3">
+              <label class="form-label">Full Name <span class="text-danger">*</span></label>
+              <input class="form-control" formControlName="fullName" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email <span class="text-danger">*</span></label>
+              <input class="form-control" formControlName="email" type="email" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">CIN <span class="text-danger">*</span></label>
+              <input class="form-control" formControlName="cin" maxlength="8" placeholder="8 digits" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone</label>
+              <input class="form-control" formControlName="phone" />
+            </div>
+            @if (editingUser?.role === 'DOCTOR') {
+              <div class="mb-3">
+                <label class="form-label">Specialization</label>
+                <input class="form-control" formControlName="specialization" />
+              </div>
+            }
+            @if (editingUser?.role === 'INFIRMIER') {
+              <div class="mb-3">
+                <label class="form-label">Service Unit</label>
+                <input class="form-control" formControlName="serviceUnit" />
+              </div>
+            }
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="showEditModal = false">Cancel</button>
+              <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid || editSaving">
+                @if (editSaving) { <span class="spinner"></span> Saving... } @else { Save Changes }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+}

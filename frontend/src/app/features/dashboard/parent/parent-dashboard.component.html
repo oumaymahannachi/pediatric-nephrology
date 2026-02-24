@@ -1,0 +1,430 @@
+@if (currentUser$ | async; as user) {
+<div class="fo">
+  <header class="fo__header">
+    <div class="fo__header-inner">
+      <a routerLink="/parent" class="fo__brand">
+        <img src="assets/brand/pedialink-logo.png" alt="PediaLink" class="fo__logo" />
+      </a>
+      <nav class="fo__nav">
+        <button class="fo__nav-link" [class.active]="activeTab === 'dashboard'" (click)="setTab('dashboard')">
+          <lucide-icon name="layout-dashboard" [size]="18"></lucide-icon> Dashboard
+        </button>
+        <button class="fo__nav-link" [class.active]="activeTab === 'children'" (click)="setTab('children')">
+          <lucide-icon name="baby" [size]="18"></lucide-icon> My Children
+        </button>
+        <button class="fo__nav-link" [class.active]="activeTab === 'appointments'" (click)="setTab('appointments')">
+          <lucide-icon name="calendar" [size]="18"></lucide-icon> Appointments
+        </button>
+        <button class="fo__nav-link" [class.active]="activeTab === 'prescriptions'" (click)="setTab('prescriptions')">
+          <lucide-icon name="file-text" [size]="18"></lucide-icon> Prescriptions
+        </button>
+        <button class="fo__nav-link" [class.active]="activeTab === 'traitements'" (click)="setTab('traitements')">
+          <lucide-icon name="pill" [size]="18"></lucide-icon> Traitements
+        </button>
+        <button class="fo__nav-link" [class.active]="activeTab === 'notifications'" (click)="setTab('notifications')">
+          <lucide-icon name="bell" [size]="18"></lucide-icon> Notifications
+        </button>
+      </nav>
+      <div class="fo__user-area">
+        <button class="fo__user-btn" (click)="toggleUserMenu()">
+          <span class="fo__avatar">{{ user.fullName.charAt(0) || 'P' }}</span>
+          <span class="fo__user-name">{{ user.fullName }}</span>
+          <lucide-icon name="chevron-down" [size]="16"></lucide-icon>
+        </button>
+        @if (userMenuOpen) {
+          <div class="fo__dropdown">
+            <a routerLink="/parent/profile" class="fo__dropdown-item" (click)="userMenuOpen = false">
+              <lucide-icon name="user" [size]="16"></lucide-icon> Edit Profile
+            </a>
+            <hr class="fo__dropdown-divider" />
+            <button class="fo__dropdown-item fo__dropdown-item--danger" (click)="logout()">
+              <lucide-icon name="log-out" [size]="16"></lucide-icon> Sign Out
+            </button>
+          </div>
+        }
+      </div>
+      <button class="fo__hamburger" (click)="toggleMobileMenu()">
+        <lucide-icon [name]="mobileMenuOpen ? 'x' : 'menu'" [size]="24"></lucide-icon>
+      </button>
+    </div>
+    @if (mobileMenuOpen) {
+      <nav class="fo__mobile-nav">
+        <button class="fo__mobile-link" [class.active]="activeTab === 'dashboard'" (click)="setTab('dashboard')">
+          <lucide-icon name="layout-dashboard" [size]="18"></lucide-icon> Dashboard
+        </button>
+        <button class="fo__mobile-link" [class.active]="activeTab === 'children'" (click)="setTab('children')">
+          <lucide-icon name="baby" [size]="18"></lucide-icon> My Children
+        </button>
+        <button class="fo__mobile-link" [class.active]="activeTab === 'appointments'" (click)="setTab('appointments')">
+          <lucide-icon name="calendar" [size]="18"></lucide-icon> Appointments
+        </button>
+        <button class="fo__mobile-link" [class.active]="activeTab === 'prescriptions'" (click)="setTab('prescriptions')">
+          <lucide-icon name="file-text" [size]="18"></lucide-icon> Prescriptions
+        </button>
+        <button class="fo__mobile-link" [class.active]="activeTab === 'traitements'" (click)="setTab('traitements')">
+          <lucide-icon name="pill" [size]="18"></lucide-icon> Traitements
+        </button>
+        <button class="fo__mobile-link" [class.active]="activeTab === 'notifications'" (click)="setTab('notifications')">
+          <lucide-icon name="bell" [size]="18"></lucide-icon> Notifications
+        </button>
+        <hr />
+        <a routerLink="/parent/profile" class="fo__mobile-link" (click)="mobileMenuOpen = false">
+          <lucide-icon name="user" [size]="18"></lucide-icon> Edit Profile
+        </a>
+        <button class="fo__mobile-link fo__mobile-link--danger" (click)="logout()">
+          <lucide-icon name="log-out" [size]="18"></lucide-icon> Sign Out
+        </button>
+      </nav>
+    }
+  </header>
+  <main class="fo__main">
+    <router-outlet></router-outlet>
+
+    @if (alertMsg) {
+      <div class="fo__alert" [class.fo__alert--success]="alertType === 'success'" [class.fo__alert--error]="alertType === 'error'">
+        <lucide-icon [name]="alertType === 'success' ? 'check-circle' : 'alert-circle'" [size]="18"></lucide-icon>
+        {{ alertMsg }}
+        <button (click)="alertMsg = ''"><lucide-icon name="x" [size]="14"></lucide-icon></button>
+      </div>
+    }
+
+    @if (!childRouteActive && activeTab === 'dashboard') {
+      <section class="fo__welcome">
+        <div class="fo__welcome-text">
+          <h1>Welcome back, <span class="fo__accent">{{ (user.fullName || '').split(' ')[0] }}</span></h1>
+          <p>Track your children's health, manage appointments, and stay connected with their pediatricians.</p>
+          <div class="fo__welcome-actions">
+            <button class="fo__btn fo__btn--primary" (click)="openApptModal()">
+              <lucide-icon name="calendar" [size]="18"></lucide-icon> Book Appointment
+            </button>
+            <button class="fo__btn fo__btn--outline" (click)="openAddChild()">
+              <lucide-icon name="plus" [size]="18"></lucide-icon> Add Child
+            </button>
+          </div>
+        </div>
+        <div class="fo__welcome-illustration">
+          <lucide-icon name="heart" [size]="120"></lucide-icon>
+        </div>
+      </section>
+      <section class="fo__stats">
+        <div class="fo__stat-card" style="--accent: #0077CC">
+          <div class="fo__stat-icon"><lucide-icon name="baby" [size]="24"></lucide-icon></div>
+          <div class="fo__stat-body">
+            <span class="fo__stat-label">Children</span>
+            <strong class="fo__stat-value">{{ stats.children }}</strong>
+          </div>
+        </div>
+        <div class="fo__stat-card" style="--accent: #0090D0">
+          <div class="fo__stat-icon"><lucide-icon name="calendar" [size]="24"></lucide-icon></div>
+          <div class="fo__stat-body">
+            <span class="fo__stat-label">Appointments</span>
+            <strong class="fo__stat-value">{{ stats.appointments }}</strong>
+          </div>
+        </div>
+        <div class="fo__stat-card" style="--accent: #10B981">
+          <div class="fo__stat-icon"><lucide-icon name="stethoscope" [size]="24"></lucide-icon></div>
+          <div class="fo__stat-body">
+            <span class="fo__stat-label">Doctors</span>
+            <strong class="fo__stat-value">{{ availableDoctors.length }}</strong>
+          </div>
+        </div>
+      </section>
+      <div class="fo__grid-2">
+        <section class="fo__section">
+          <div class="fo__section-header">
+            <h2><lucide-icon name="baby" [size]="20"></lucide-icon> My Children</h2>
+            <button class="fo__link-btn" (click)="setTab('children')">View all <lucide-icon name="chevron-right" [size]="16"></lucide-icon></button>
+          </div>
+          @if (children.length === 0) {
+            <div class="fo__empty-inline">
+              <p>No children added yet</p>
+              <button class="fo__btn fo__btn--small" (click)="openAddChild()"><lucide-icon name="plus" [size]="14"></lucide-icon> Add Child</button>
+            </div>
+          }
+          @for (child of children.slice(0, 3); track child.id) {
+            <div class="fo__child-card">
+              <div class="fo__child-avatar">{{ child.fullName.charAt(0) }}</div>
+              <div class="fo__child-info">
+                <strong>{{ child.fullName }}</strong>
+                <span>{{ child.gender }} &middot; Born {{ child.dateOfBirth }}</span>
+              </div>
+            </div>
+          }
+        </section>
+        <section class="fo__section">
+          <div class="fo__section-header">
+            <h2><lucide-icon name="calendar" [size]="20"></lucide-icon> Recent Appointments</h2>
+            <button class="fo__link-btn" (click)="setTab('appointments')">View all <lucide-icon name="chevron-right" [size]="16"></lucide-icon></button>
+          </div>
+          @if (appointments.length === 0) {
+            <div class="fo__empty-inline">
+              <p>No appointments yet</p>
+              <button class="fo__btn fo__btn--small" (click)="openApptModal()"><lucide-icon name="plus" [size]="14"></lucide-icon> Book</button>
+            </div>
+          }
+          @for (apt of appointments.slice(0, 3); track apt.id) {
+            <div class="fo__apt-card">
+              <div class="fo__apt-info">
+                <strong>{{ getChildName(apt.childId) }}</strong>
+                <span>{{ getDoctorName(apt.doctorId) }}</span>
+              </div>
+              <div class="fo__apt-details">
+                <span class="fo__tag fo__tag--blue"><lucide-icon name="calendar" [size]="12"></lucide-icon> {{ apt.dateTime | date:'MMM d, y' }}</span>
+                <span class="fo__tag fo__tag--{{ getStatusClass(apt.status || '') }}">{{ apt.status }}</span>
+              </div>
+            </div>
+          }
+        </section>
+      </div>
+    }
+
+    @if (!childRouteActive && activeTab === 'children') {
+      <section class="fo__page">
+        <div class="fo__page-header">
+          <h1><lucide-icon name="baby" [size]="24"></lucide-icon> My Children</h1>
+          <button class="fo__btn fo__btn--action" (click)="openAddChild()"><lucide-icon name="plus" [size]="18"></lucide-icon> Add Child</button>
+        </div>
+        @if (children.length === 0) {
+          <div class="fo__empty-state">
+            <lucide-icon name="baby" [size]="48"></lucide-icon>
+            <h3>No children yet</h3>
+            <p>Add your child's profile to get started.</p>
+            <button class="fo__btn fo__btn--action" (click)="openAddChild()"><lucide-icon name="plus" [size]="18"></lucide-icon> Add Child</button>
+          </div>
+        }
+        <div class="fo__children-grid">
+          @for (child of children; track child.id) {
+            <div class="fo__child-detail-card">
+              <div class="fo__child-detail-top">
+                <div class="fo__child-detail-avatar">{{ child.fullName.charAt(0) }}</div>
+                <div class="fo__child-detail-actions-top">
+                  <button class="fo__icon-btn" title="Edit" (click)="openEditChild(child)"><lucide-icon name="edit" [size]="16"></lucide-icon></button>
+                  <button class="fo__icon-btn fo__icon-btn--danger" title="Delete" (click)="deleteChild(child)"><lucide-icon name="trash-2" [size]="16"></lucide-icon></button>
+                </div>
+              </div>
+              <h3>{{ child.fullName }}</h3>
+              <p>{{ child.gender }} &middot; Born {{ child.dateOfBirth }}</p>
+              @if (child.notes) {
+                <p class="fo__child-notes">{{ child.notes }}</p>
+              }
+              <div class="fo__child-doctors">
+                <h4><lucide-icon name="stethoscope" [size]="14"></lucide-icon> Assigned Doctors</h4>
+                @if (!child.doctorIds || child.doctorIds.length === 0) {
+                  <p class="fo__child-no-doc">No doctors assigned</p>
+                }
+                @for (dId of child.doctorIds; track dId) {
+                  <div class="fo__child-doc-tag">
+                    <span>{{ getDoctorName(dId) }}</span>
+                    <button (click)="removeDoctor(child, dId)" title="Remove"><lucide-icon name="x" [size]="12"></lucide-icon></button>
+                  </div>
+                }
+                <button class="fo__btn fo__btn--small fo__btn--outline-sm" (click)="openDoctorModal(child)">
+                  <lucide-icon name="plus" [size]="14"></lucide-icon> Assign Doctor
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (!childRouteActive && activeTab === 'appointments') {
+      <section class="fo__page">
+        <div class="fo__page-header">
+          <h1><lucide-icon name="calendar" [size]="24"></lucide-icon> Appointments</h1>
+          <button class="fo__btn fo__btn--action" (click)="openApptModal()"><lucide-icon name="plus" [size]="18"></lucide-icon> Book Appointment</button>
+        </div>
+        @if (appointments.length === 0) {
+          <div class="fo__empty-state">
+            <lucide-icon name="calendar" [size]="48"></lucide-icon>
+            <h3>No appointments</h3>
+            <p>Book your first appointment with a pediatrician.</p>
+            <button class="fo__btn fo__btn--action" (click)="openApptModal()"><lucide-icon name="plus" [size]="18"></lucide-icon> Book</button>
+          </div>
+        }
+        <div class="fo__appointments-full">
+          @for (apt of appointments; track apt.id) {
+            <div class="fo__apt-full-card">
+              <div class="fo__apt-full-left">
+                <div class="fo__apt-full-icon"><lucide-icon name="stethoscope" [size]="24"></lucide-icon></div>
+                <div>
+                  <strong>{{ getChildName(apt.childId) }}</strong>
+                  <span>{{ getDoctorName(apt.doctorId) }}</span>
+                </div>
+              </div>
+              <div class="fo__apt-full-mid">
+                <span class="fo__tag fo__tag--blue"><lucide-icon name="calendar" [size]="12"></lucide-icon> {{ apt.dateTime | date:'MMM d, y, h:mm a' }}</span>
+                <span class="fo__tag fo__tag--{{ getStatusClass(apt.status || '') }}">{{ apt.status }}</span>
+              </div>
+              <div class="fo__apt-full-right">
+                @if (apt.reason) {
+                  <span class="fo__apt-reason">{{ apt.reason }}</span>
+                }
+                @if (apt.status === 'PENDING' || apt.status === 'ACCEPTED') {
+                  <button class="fo__btn fo__btn--small fo__btn--danger-sm" (click)="cancelAppointment(apt.id!)">
+                    <lucide-icon name="x" [size]="14"></lucide-icon> Cancel
+                  </button>
+                }
+                @if (apt.status === 'RESCHEDULED' && apt.proposedDateTime) {
+                  <span class="fo__apt-proposed">Proposed: {{ apt.proposedDateTime | date:'MMM d, y, h:mm a' }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (!childRouteActive && activeTab === 'prescriptions') {
+      <section class="fo__page">
+        <div class="fo__page-header">
+          <h1><lucide-icon name="file-text" [size]="24"></lucide-icon> Mes Prescriptions</h1>
+        </div>
+        <app-prescription-list></app-prescription-list>
+      </section>
+    }
+
+    @if (!childRouteActive && activeTab === 'traitements') {
+      <section class="fo__page">
+        <div class="fo__page-header">
+          <h1><lucide-icon name="pill" [size]="24"></lucide-icon> Mes Traitements Chroniques</h1>
+        </div>
+        <app-traitement-list></app-traitement-list>
+      </section>
+    }
+
+    @if (!childRouteActive && activeTab === 'notifications') {
+      <section class="fo__page">
+        <div class="fo__page-header">
+          <h1><lucide-icon name="bell" [size]="24"></lucide-icon> Notifications</h1>
+        </div>
+        <app-notification-list></app-notification-list>
+      </section>
+    }
+  </main>
+  <footer class="fo__footer">
+    <div class="fo__footer-inner">
+      <img src="assets/brand/pedialink-logo.png" alt="PediaLink" class="fo__footer-logo" />
+      <span class="fo__footer-copy">&copy; 2026 PediaLink. All rights reserved.</span>
+    </div>
+  </footer>
+</div>
+}
+
+@if (showChildModal) {
+  <div class="modal-overlay" (click)="showChildModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h2>{{ editingChild ? 'Edit Child' : 'Add Child' }}</h2>
+        <button class="modal__close" (click)="showChildModal = false"><lucide-icon name="x" [size]="20"></lucide-icon></button>
+      </div>
+      <form [formGroup]="childForm" (ngSubmit)="saveChild()" class="modal__body">
+        <div class="modal__field">
+          <label>Full Name <span class="req">*</span></label>
+          <input formControlName="fullName" placeholder="Child's full name" />
+        </div>
+        <div class="modal__field">
+          <label>Date of Birth <span class="req">*</span></label>
+          <input formControlName="dateOfBirth" type="date" />
+        </div>
+        <div class="modal__field">
+          <label>Gender <span class="req">*</span></label>
+          <select formControlName="gender">
+            <option value="">Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+        <div class="modal__field">
+          <label>Notes</label>
+          <textarea formControlName="notes" rows="3" placeholder="Any additional notes..."></textarea>
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="modal__btn modal__btn--ghost" (click)="showChildModal = false">Cancel</button>
+          <button type="submit" class="modal__btn modal__btn--primary" [disabled]="childForm.invalid || childSaving">
+            @if (childSaving) { <span class="modal__spin"></span> }
+            {{ editingChild ? 'Update' : 'Add Child' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showApptModal) {
+  <div class="modal-overlay" (click)="showApptModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h2>Book Appointment</h2>
+        <button class="modal__close" (click)="showApptModal = false"><lucide-icon name="x" [size]="20"></lucide-icon></button>
+      </div>
+      <form [formGroup]="apptForm" (ngSubmit)="saveAppointment()" class="modal__body">
+        <div class="modal__field">
+          <label>Child <span class="req">*</span></label>
+          <select formControlName="childId">
+            <option value="">Select child</option>
+            @for (child of children; track child.id) {
+              <option [value]="child.id">{{ child.fullName }}</option>
+            }
+          </select>
+        </div>
+        <div class="modal__field">
+          <label>Doctor <span class="req">*</span></label>
+          <select formControlName="doctorId">
+            <option value="">Select doctor</option>
+            @for (doc of availableDoctors; track doc.id) {
+              <option [value]="doc.id">Dr. {{ doc.fullName }} - {{ doc.specialization || 'General' }}</option>
+            }
+          </select>
+        </div>
+        <div class="modal__field">
+          <label>Date & Time <span class="req">*</span></label>
+          <input formControlName="dateTime" type="datetime-local" />
+        </div>
+        <div class="modal__field">
+          <label>Reason <span class="req">*</span></label>
+          <input formControlName="reason" placeholder="Reason for appointment" />
+        </div>
+        <div class="modal__field">
+          <label>Additional Notes</label>
+          <textarea formControlName="parentNotes" rows="3" placeholder="Any notes for the doctor..."></textarea>
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="modal__btn modal__btn--ghost" (click)="showApptModal = false">Cancel</button>
+          <button type="submit" class="modal__btn modal__btn--primary" [disabled]="apptForm.invalid || apptSaving">
+            @if (apptSaving) { <span class="modal__spin"></span> }
+            Book Appointment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showDoctorModal && selectedChildForDoctor) {
+  <div class="modal-overlay" (click)="showDoctorModal = false">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h2>Assign Doctor to {{ selectedChildForDoctor.fullName }}</h2>
+        <button class="modal__close" (click)="showDoctorModal = false"><lucide-icon name="x" [size]="20"></lucide-icon></button>
+      </div>
+      <div class="modal__body">
+        @if (availableDoctors.length === 0) {
+          <p class="modal__empty">No doctors available</p>
+        }
+        @for (doc of availableDoctors; track doc.id) {
+          <div class="modal__doctor-item">
+            <div class="modal__doctor-info">
+              <strong>Dr. {{ doc.fullName }}</strong>
+              <span>{{ doc.specialization || 'General Pediatrics' }}</span>
+            </div>
+            <button class="modal__btn modal__btn--small" (click)="assignDoctor(doc.id)"
+              [disabled]="selectedChildForDoctor.doctorIds?.includes(doc.id)">
+              @if (selectedChildForDoctor.doctorIds?.includes(doc.id)) { Assigned } @else { Assign }
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: prescription-service
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/pedialink_prescriptions}
+      auto-index-creation: true
+
+server:
+  port: ${SERVER_PORT:8082}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:votre-cle-secrete-tres-longue-pour-jwt-signing-min-256-bits}
+    expiration-ms: ${JWT_EXPIRATION:86400000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    tn.pedialink.prescription: DEBUG
+    org.springframework.data.mongodb: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
